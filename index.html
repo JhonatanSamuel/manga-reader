@@ -478,8 +478,13 @@
     return r?.attributes?.fileName ? `${COVERS}/${m.id}/${r.attributes.fileName}.512.jpg` : null;
   }
   function getTitle(m) {
-    const t = m.attributes.title;
-    return t['pt-br']||t['pt']||t['en']||Object.values(t)[0]||'Sem título';
+    const t    = m.attributes.title ?? {};
+    const alts = m.attributes.altTitles ?? [];
+    const pick = (lang) => t[lang] || alts.find(a=>a[lang])?.[lang];
+    return pick('pt-br') || pick('pt') || pick('en')
+      || Object.values(t)[0]
+      || alts[0]?.[Object.keys(alts[0])[0]]
+      || 'Sem título';
   }
   function getDesc(m) {
     const d = m.attributes.description??{};
@@ -511,6 +516,7 @@
 
   /* ══ CARD ══ */
   function MangaCard({manga, rank, isNew, isStar, isHist, onClick}) {
+    const [imgOk, setImgOk] = React.useState(true);
     const cover=getCover(manga), title=getTitle(manga), pt=hasPT(manga);
     return (
       <div className="manga-card" onClick={onClick} title={title}>
@@ -521,8 +527,10 @@
           {isHist && <span className="badge b-hist">VISTO</span>}
           {pt     && <span className="badge b-pt">PT</span>}
         </div>
-        {cover
-          ? <img src={cover} alt={title} className="manga-cover" loading="lazy"/>
+        {cover && imgOk
+          ? <img src={cover} alt={title} className="manga-cover" loading="lazy"
+              crossOrigin="anonymous"
+              onError={() => setImgOk(false)}/>
           : <div className="cover-ph">📖</div>}
         <div className="card-body"><div className="card-title">{title}</div></div>
       </div>
