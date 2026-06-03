@@ -802,7 +802,19 @@
     const cover=getCover(manga), title=getTitle(manga), desc=getDesc(manga);
 
     return (
-      <div>
+      <div style={{position:'relative'}}>
+        {cover && (
+          <div aria-hidden="true" style={{
+            position:'fixed', inset:0, zIndex:0,
+            backgroundImage:`url(${cover})`,
+            backgroundSize:'cover', backgroundPosition:'center top',
+            filter:'blur(60px) saturate(1.8)',
+            transform:'scale(1.15)',
+            opacity:0.22,
+            pointerEvents:'none',
+          }}/>
+        )}
+        <div style={{position:'relative', zIndex:1}}>
         <button className="back-btn" onClick={onBack}>← Voltar</button>
         <div className="detail-header">
           {cover
@@ -843,6 +855,7 @@
               <span className="ch-date">{fmtDate(ch.attributes.publishAt)}</span>
             </div>
           ))}
+        </div>
         </div>
       </div>
     );
