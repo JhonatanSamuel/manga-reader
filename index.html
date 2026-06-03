@@ -432,7 +432,7 @@
   async function fetchSection(order, limit='6') {
     const d = await apiFetch('/manga', {
       ...BASE, ...order,
-      'availableTranslatedLanguage[]':['pt-br'], limit,
+      'availableTranslatedLanguage[]':['pt-br','pt','en'], limit,
     });
     return d.data ?? [];
   }
@@ -443,7 +443,7 @@
     if (search) {
       params.title = search;
     } else {
-      params['availableTranslatedLanguage[]'] = ['pt-br'];
+      params['availableTranslatedLanguage[]'] = ['pt-br','pt','en'];
       if (category==='popular') params['order[followedCount]'] = 'desc';
       else if (category==='recent')  params['order[latestUploadedChapter]'] = 'desc';
       else if (category==='rated')   params['order[rating]'] = 'desc';
@@ -452,7 +452,7 @@
     return { items: d.data ?? [], total: d.total ?? 0 };
   }
 
-  // Busca todos os capítulos em pt-br + pt com paginação
+  // Busca capítulos em pt-br, pt e en (fallback)
   async function fetchAllChapters(mangaId) {
     async function fetchLang(lang) {
       let all = [], offset = 0;
@@ -471,11 +471,13 @@
       return all;
     }
 
-    const [ptbr, pt] = await Promise.all([fetchLang('pt-br'), fetchLang('pt')]);
+    const [ptbr, pt, en] = await Promise.all([
+      fetchLang('pt-br'), fetchLang('pt'), fetchLang('en'),
+    ]);
 
-    // Mescla: pt-br tem prioridade sobre mesmo número de capítulo
+    // Prioridade: pt-br > pt > en para o mesmo número de capítulo
     const map = new Map();
-    for (const ch of [...pt, ...ptbr]) {
+    for (const ch of [...en, ...pt, ...ptbr]) {
       const key = ch.attributes.chapter ?? ch.id;
       map.set(key, ch);
     }
@@ -530,16 +532,18 @@
   function fmtDate(s) { return s?new Date(s).toLocaleDateString('pt-BR'):''; }
   function chapLabel(ch) {
     const n=ch.attributes.chapter, t=ch.attributes.title;
-    if(n&&t) return `Cap. ${n} – ${t}`;
-    return n?`Capítulo ${n}`:(t||'Capítulo');
+    const lang=ch.attributes.translatedLanguage;
+    const tag=(lang==='en')?' 🇺🇸':'';
+    if(n&&t) return `Cap. ${n} – ${t}${tag}`;
+    return n?`Capítulo ${n}${tag}`:(t||'Capítulo');
   }
 
   /* ══ SECTION CONFIG ══ */
   const SECTIONS = {
-    popular: { label:'🔥 Mais Lidos em Português',    color:'#ff4560', cat:'popular' },
-    recent:  { label:'📅 Atualizados Esta Semana',     color:'#2979ff', cat:'recent'  },
-    rated:   { label:'⭐ Mais Curtidos em Português',  color:'#ffd600', cat:'rated'   },
-    history: { label:'🕐 Vistos por Você',             color:'#e040fb', cat:'history' },
+    popular: { label:'🔥 Mais Lidos',            color:'#ff4560', cat:'popular' },
+    recent:  { label:'📅 Atualizados Esta Semana', color:'#2979ff', cat:'recent'  },
+    rated:   { label:'⭐ Mais Curtidos',           color:'#ffd600', cat:'rated'   },
+    history: { label:'🕐 Vistos por Você',         color:'#e040fb', cat:'history' },
   };
 
   /* ══ SPINNER ══ */
@@ -823,11 +827,17 @@
     const [loading, setLoading] =useState(true);
     const [error,   setError]   =useState('');
     const [noPT,    setNoPT]    =useState(false);
+    const [enOnly,  setEnOnly]  =useState(false);
 
     useEffect(()=>{
-      setLoading(true); setError(''); setNoPT(false);
+      setLoading(true); setError(''); setNoPT(false); setEnOnly(false);
       fetchAllChapters(manga.id)
-        .then(chs=>{ setChapters(chs); if(!chs.length) setNoPT(true); })
+        .then(chs=>{
+          setChapters(chs);
+          if(!chs.length) { setNoPT(true); return; }
+          const hasPTch = chs.some(c=>['pt-br','pt'].includes(c.attributes.translatedLanguage));
+          if(!hasPTch) setEnOnly(true);
+        })
         .catch(e=>setError(e.message))
         .finally(()=>setLoading(false));
     },[manga.id]);
@@ -863,14 +873,19 @@
 
         {noPT && !loading && (
           <div className="no-pt">
-            ⚠️ Nenhum capítulo em português encontrado no MangaDex.
+            ⚠️ Nenhum capítulo disponível para este mangá.
+          </div>
+        )}
+        {enOnly && !loading && (
+          <div className="no-pt" style={{borderLeftColor:'#2979ff',color:'#82b1ff',background:'linear-gradient(135deg,#001433,#001a40)'}}>
+            🇺🇸 Sem tradução em português — exibindo capítulos em inglês.
           </div>
         )}
 
         <div className="sec-header" style={{marginBottom:10,borderBottom:'2px solid var(--accent)33'}}>
           <div className="sec-title">
             <span className="sec-title-bar" style={{background:'var(--accent)'}}/>
-            <span>Capítulos em Português</span>
+            <span>Capítulos Disponíveis</span>
           </div>
           {!loading && !error &&
             <span style={{color:'var(--muted)',fontSize:'.8rem',fontWeight:600}}>
