@@ -1229,25 +1229,6 @@
           <div className="logo" onClick={goHome}>
             Manga<span className="logo-dot">BR</span>
           </div>
-          {firebaseAuth && user===null && (
-            <button className="btn btn-red" onClick={()=>setShowLogin(true)}
-              style={{whiteSpace:'nowrap',flexShrink:0}}>
-              Entrar
-            </button>
-          )}
-          {firebaseAuth && user && (
-            <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-              <div className="user-chip" title={user.email}>
-                <div className="user-avatar">{avatarLetter}</div>
-                <span className="user-email">{user.email}</span>
-              </div>
-              <button className="btn btn-ghost"
-                style={{padding:'7px 12px',fontSize:'.78rem'}}
-                onClick={()=>firebaseAuth.signOut()}>
-                Sair
-              </button>
-            </div>
-          )}
           {!IS_FILE && (
             <div className="search-wrap">
               <input className="search-input" type="text"
@@ -1258,10 +1239,30 @@
               <button className="btn btn-red" onClick={doSearch}>Buscar</button>
             </div>
           )}
-          <button className="btn btn-ghost" onClick={toggleTheme} title="Alternar tema"
-            style={{flexShrink:0}}>
-            {theme==='dark'?'☀️':'🌙'}
-          </button>
+          <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
+            <button className="btn btn-ghost" onClick={toggleTheme} title="Alternar tema">
+              {theme==='dark'?'☀️':'🌙'}
+            </button>
+            {firebaseAuth && user===null && (
+              <button className="btn btn-red" onClick={()=>setShowLogin(true)}
+                style={{whiteSpace:'nowrap'}}>
+                Entrar
+              </button>
+            )}
+            {firebaseAuth && user && (
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <div className="user-chip" title={user.email}>
+                  <div className="user-avatar">{avatarLetter}</div>
+                  <span className="user-email">{user.email}</span>
+                </div>
+                <button className="btn btn-ghost"
+                  style={{padding:'7px 12px',fontSize:'.78rem'}}
+                  onClick={()=>firebaseAuth.signOut()}>
+                  Sair
+                </button>
+              </div>
+            )}
+          </div>
         </header>
 
         {showLogin && <LoginModal onClose={()=>setShowLogin(false)}/>}
