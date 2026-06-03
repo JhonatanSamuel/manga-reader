@@ -371,7 +371,7 @@
   const { useState, useEffect, useRef, useCallback } = React;
 
   const IS_FILE = location.protocol === 'file:';
-  const COVERS  = 'https://uploads.mangadex.org/covers';
+  const COVERS  = '/api/covers';
   const RATINGS = ['safe','suggestive'];
 
   /* ══ API ══ */
@@ -529,7 +529,6 @@
         </div>
         {cover && imgOk
           ? <img src={cover} alt={title} className="manga-cover" loading="lazy"
-              crossOrigin="anonymous"
               onError={() => setImgOk(false)}/>
           : <div className="cover-ph">📖</div>}
         <div className="card-body"><div className="card-title">{title}</div></div>
