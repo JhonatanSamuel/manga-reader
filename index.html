@@ -352,6 +352,15 @@
       font-family:monospace;color:var(--text);font-size:.86rem;
     }
 
+    /* ══ TABLET ══ */
+    @media(max-width:768px){
+      .detail-header{flex-direction:column;align-items:center;text-align:center}
+      .detail-cover,.detail-cover-ph{width:130px}
+      .detail-info p{-webkit-line-clamp:4}
+      .detail-info h1{font-size:1.25rem}
+    }
+
+    /* ══ MOBILE ══ */
     @media(max-width:620px){
       .header{padding:10px 14px;gap:9px}
       .logo{font-size:1.25rem}
@@ -359,9 +368,32 @@
       .main{padding:0 12px 36px}
       .hero{padding:24px 20px;margin:14px 0 28px}
       .hero-icon{display:none}
+      .hero-text h1{font-size:1.5rem}
       .reader-ctrl{top:58px;padding:8px 12px;gap:7px}
       .page-ind{min-width:80px;font-size:.82rem}
       .browse-search-bar{padding:14px;gap:8px}
+      .sec-header{flex-wrap:wrap;gap:8px}
+      .ch-name{font-size:.83rem}
+      .ch-date{font-size:.7rem}
+      .chapter-row{padding:11px 14px}
+    }
+
+    /* ══ SMALL MOBILE ══ */
+    @media(max-width:480px){
+      .header{flex-wrap:wrap}
+      .search-wrap{order:3;flex-basis:100%;max-width:100%}
+      .btn-ghost{margin-left:auto}
+      .reader-ctrl{top:108px}
+      .hero-text h1{font-size:1.3rem}
+      .hero-text p{font-size:.85rem}
+      .btn-more{font-size:.7rem;padding:4px 10px}
+    }
+
+    /* ══ VERY SMALL ══ */
+    @media(max-width:360px){
+      .logo{font-size:1.05rem}
+      .detail-cover,.detail-cover-ph{width:100px}
+      .hero-text h1{font-size:1.15rem}
     }
   </style>
 </head>
