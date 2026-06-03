@@ -1,0 +1,6 @@
+{
+  "name": "mangabr",
+  "version": "1.0.0",
+  "description": "Leitor de mangás em português",
+  "engines": { "node": ">=18" }
+}

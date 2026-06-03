@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MangaBR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--speed:.22s;--radius:12px}
+
+    .dark{
+      --bg:#0a0a0f;--bg2:#13131a;--card:#1a1a24;--header:#0f0f17;
+      --text:#f0f0ff;--muted:#7a7a9a;--border:#252535;
+      --accent:#ff4560;--accent2:#e0003a;
+      --shadow:rgba(0,0,0,.65);--shadow-card:rgba(0,0,0,.45);
+      --ch-bg:#1e1e2e;--ch-hover:#28283c;--ch-text:#e8e8f8;--ch-border:#2e2e44;
+      --hero1:#1a0020;--hero2:#0a0a0f;
+      --inp-bg:#1a1a26;
+    }
+    .light{
+      --bg:#f4f5fb;--bg2:#eaeaf5;--card:#fff;--header:#fff;
+      --text:#1a1a2e;--muted:#6b6b8a;--border:#dddded;
+      --accent:#ff4560;--accent2:#e0003a;
+      --shadow:rgba(80,80,180,.1);--shadow-card:rgba(80,80,180,.08);
+      --ch-bg:#fff;--ch-hover:#f4f5fb;--ch-text:#1a1a2e;--ch-border:#dddded;
+      --hero1:#ffe8f0;--hero2:#f4f5fb;
+      --inp-bg:#eaeaf5;
+    }
+
+    body{
+      background:var(--bg);color:var(--text);
+      font-family:'Poppins',sans-serif;min-height:100vh;
+      transition:background var(--speed),color var(--speed);
+    }
+    ::selection{background:var(--accent);color:#fff}
+
+    /* ══ SCROLLBAR ══ */
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:var(--bg)}
+    ::-webkit-scrollbar-thumb{background:var(--accent);border-radius:99px}
+
+    /* ══ HEADER ══ */
+    .header{
+      position:sticky;top:0;z-index:300;
+      background:var(--header);
+      border-bottom:1px solid var(--border);
+      box-shadow:0 4px 24px var(--shadow);
+      padding:12px 28px;
+      display:flex;align-items:center;gap:14px;
+      backdrop-filter:blur(12px);
+    }
+    .logo{
+      font-size:1.55rem;font-weight:900;cursor:pointer;
+      background:linear-gradient(135deg,#ff4560,#ff8c42);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      white-space:nowrap;letter-spacing:-1px;user-select:none;
+    }
+    .logo-dot{
+      -webkit-text-fill-color:var(--text);
+      background:none;-webkit-background-clip:unset;
+    }
+    .search-wrap{flex:1;display:flex;gap:8px;max-width:680px}
+    .search-input{
+      flex:1;padding:10px 18px;
+      background:var(--inp-bg);color:var(--text);
+      border:1.5px solid var(--border);border-radius:99px;
+      font-size:.95rem;outline:none;font-family:'Poppins',sans-serif;
+      transition:border-color var(--speed),box-shadow var(--speed);
+    }
+    .search-input::placeholder{color:var(--muted)}
+    .search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,69,96,.15)}
+
+    /* ══ BOTÕES ══ */
+    .btn{
+      padding:9px 20px;border:none;border-radius:99px;
+      font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;
+      font-family:'Poppins',sans-serif;letter-spacing:.3px;
+      transition:all var(--speed);
+    }
+    .btn:active{transform:scale(.95)}
+    .btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+    .btn-red{
+      background:linear-gradient(135deg,#ff4560,#ff6b35);
+      color:#fff;box-shadow:0 4px 14px rgba(255,69,96,.35);
+    }
+    .btn-red:hover:not(:disabled){
+      box-shadow:0 6px 20px rgba(255,69,96,.5);transform:translateY(-1px);
+    }
+    .btn-ghost{
+      background:var(--bg2);color:var(--text);
+      border:1.5px solid var(--border);padding:8px 14px;font-size:1.1rem;
+    }
+    .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+    .btn-more{
+      background:transparent;color:var(--accent);
+      border:1.5px solid var(--accent);
+      padding:5px 16px;font-size:.78rem;border-radius:99px;
+      cursor:pointer;font-family:'Poppins',sans-serif;font-weight:700;
+      transition:all var(--speed);white-space:nowrap;
+    }
+    .btn-more:hover{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(255,69,96,.35)}
+
+    .btn-load{
+      display:block;margin:28px auto 0;
+      background:var(--bg2);color:var(--text);
+      border:1.5px solid var(--border);
+      padding:11px 32px;font-size:.88rem;border-radius:99px;
+      cursor:pointer;font-family:'Poppins',sans-serif;font-weight:700;
+      transition:all var(--speed);
+    }
+    .btn-load:hover{border-color:var(--accent);color:var(--accent)}
+    .btn-load:disabled{opacity:.4;cursor:not-allowed}
+
+    .btn-mode{
+      background:transparent;color:var(--muted);
+      border:none;padding:7px 14px;font-size:.8rem;
+      border-radius:99px;font-family:'Poppins',sans-serif;font-weight:600;
+      cursor:pointer;transition:all var(--speed);
+    }
+    .btn-mode.active{background:var(--accent);color:#fff;box-shadow:0 3px 10px rgba(255,69,96,.35)}
+
+    /* ══ LAYOUT ══ */
+    .main{max-width:1320px;margin:0 auto;padding:0 24px 56px}
+
+    /* ══ HERO ══ */
+    .hero{
+      background:linear-gradient(135deg,var(--hero1),var(--hero2));
+      border-radius:20px;padding:40px 36px;margin:24px 0 40px;
+      display:flex;align-items:center;gap:28px;flex-wrap:wrap;
+      border:1px solid var(--border);position:relative;overflow:hidden;
+    }
+    .hero::before{
+      content:'';position:absolute;top:-60px;right:-60px;
+      width:220px;height:220px;border-radius:50%;
+      background:radial-gradient(circle,rgba(255,69,96,.18),transparent 70%);
+    }
+    .hero-icon{font-size:4.5rem;flex-shrink:0;filter:drop-shadow(0 4px 16px rgba(255,69,96,.4))}
+    .hero-text h1{font-size:1.9rem;font-weight:900;margin-bottom:8px;
+      background:linear-gradient(135deg,var(--text),var(--accent));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero-text p{color:var(--muted);font-size:.95rem;line-height:1.65;font-weight:500}
+
+    /* ══ SEÇÃO HOME ══ */
+    .home-section{margin-bottom:48px}
+    .sec-header{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:18px;padding-bottom:12px;
+    }
+    .sec-title{
+      font-size:1.05rem;font-weight:800;
+      display:flex;align-items:center;gap:10px;letter-spacing:.2px;
+    }
+    .sec-title-bar{
+      width:4px;height:22px;border-radius:99px;flex-shrink:0;
+    }
+
+    /* ══ GRID 6 COLUNAS (HOME) ══ */
+    .home-grid{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:16px;
+    }
+    /* ══ GRID FLEXÍVEL (BUSCA / BROWSE) ══ */
+    .flex-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(148px,1fr));
+      gap:14px;
+    }
+    @media(max-width:1180px){.home-grid{grid-template-columns:repeat(5,1fr)}}
+    @media(max-width:940px) {.home-grid{grid-template-columns:repeat(4,1fr)}}
+    @media(max-width:680px) {.home-grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:440px) {.home-grid,.flex-grid{grid-template-columns:repeat(2,1fr)}}
+
+    /* ══ CARD ══ */
+    .manga-card{
+      background:var(--card);border-radius:var(--radius);overflow:hidden;
+      cursor:pointer;box-shadow:0 4px 16px var(--shadow-card);
+      position:relative;border:1.5px solid var(--border);
+      transition:transform .22s cubic-bezier(.34,1.56,.64,1),
+                 box-shadow .22s,border-color .22s;
+    }
+    .manga-card:hover{
+      transform:translateY(-7px) scale(1.02);
+      box-shadow:0 16px 40px var(--shadow);
+      border-color:var(--accent);
+    }
+    .manga-cover{width:100%;aspect-ratio:2/3;object-fit:cover;background:var(--bg2);display:block}
+    .cover-ph{
+      width:100%;aspect-ratio:2/3;background:linear-gradient(135deg,var(--bg2),var(--border));
+      display:flex;align-items:center;justify-content:center;font-size:2.4rem;color:var(--muted);
+    }
+    .card-body{padding:9px 11px 12px}
+    .card-title{
+      font-size:.76rem;font-weight:700;line-height:1.4;
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    }
+    .card-badges{position:absolute;top:7px;left:7px;display:flex;gap:3px;flex-wrap:wrap}
+    .badge{
+      font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:6px;
+      letter-spacing:.5px;box-shadow:0 2px 8px rgba(0,0,0,.4);
+    }
+    .b-rank{background:linear-gradient(135deg,#ff4560,#ff8c42);color:#fff}
+    .b-pt  {background:linear-gradient(135deg,#00b894,#00cec9);color:#fff}
+    .b-new {background:linear-gradient(135deg,#2979ff,#00b0ff);color:#fff}
+    .b-star{background:linear-gradient(135deg,#ffd600,#ff9100);color:#111}
+    .b-hist{background:linear-gradient(135deg,#9c27b0,#e040fb);color:#fff}
+
+    /* ══ DETALHE ══ */
+    .back-btn{
+      display:inline-flex;align-items:center;gap:7px;background:none;
+      border:none;color:var(--muted);cursor:pointer;font-size:.9rem;
+      font-family:'Poppins',sans-serif;font-weight:600;
+      padding:0 0 22px;transition:color var(--speed);
+    }
+    .back-btn:hover{color:var(--accent)}
+    .detail-header{display:flex;gap:28px;margin-bottom:32px;flex-wrap:wrap}
+    .detail-cover{
+      width:150px;flex-shrink:0;border-radius:var(--radius);
+      object-fit:cover;box-shadow:0 8px 32px var(--shadow);
+    }
+    .detail-cover-ph{
+      width:150px;flex-shrink:0;border-radius:var(--radius);
+      background:linear-gradient(135deg,var(--bg2),var(--border));
+      display:flex;align-items:center;justify-content:center;
+      font-size:3.5rem;color:var(--muted);aspect-ratio:2/3;
+    }
+    .detail-info h1{font-size:1.5rem;font-weight:800;margin-bottom:10px;line-height:1.3}
+    .detail-info p{color:var(--muted);font-size:.87rem;line-height:1.7;
+      display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+    .status-badge{
+      display:inline-block;background:var(--bg2);color:var(--muted);
+      font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:99px;
+      margin-top:8px;text-transform:uppercase;letter-spacing:.6px;border:1px solid var(--border);
+    }
+
+    /* ══ CAPÍTULOS ══ */
+    .ch-total{color:var(--muted);font-size:.8rem;font-weight:500;margin-bottom:12px}
+    .chapter-list{display:flex;flex-direction:column;gap:6px}
+    .chapter-row{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:13px 20px;background:var(--ch-bg);border-radius:10px;cursor:pointer;
+      border:1.5px solid var(--ch-border);
+      transition:all var(--speed);position:relative;overflow:hidden;
+    }
+    .chapter-row::before{
+      content:'';position:absolute;left:0;top:0;bottom:0;width:0;
+      background:linear-gradient(135deg,#ff4560,#ff8c42);
+      transition:width var(--speed);border-radius:0 4px 4px 0;
+    }
+    .chapter-row:hover{border-color:var(--accent);background:var(--ch-hover);transform:translateX(4px)}
+    .chapter-row:hover::before{width:3px}
+    .ch-name{font-weight:700;font-size:.88rem;color:var(--ch-text)}
+    .ch-date{color:var(--muted);font-size:.74rem;flex-shrink:0;margin-left:12px}
+    .ch-loading{color:var(--muted);font-size:.85rem;font-style:italic;padding:8px 0}
+
+    .no-pt{
+      background:linear-gradient(135deg,#1a0800,#200a00);
+      color:#ffa040;padding:14px 18px;border-radius:10px;
+      font-size:.86rem;margin-bottom:16px;border-left:3px solid #ffa040;
+      font-weight:500;
+    }
+    .light .no-pt{background:linear-gradient(135deg,#fff4e0,#fff9f0);color:#a05000}
+
+    /* ══ LEITOR ══ */
+    .reader{display:flex;flex-direction:column;align-items:center;gap:14px}
+    .reader-topbar{
+      width:100%;display:flex;align-items:center;
+      justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px;
+    }
+    .reader-title{font-size:.98rem;font-weight:800}
+    .reader-ch{color:var(--muted);font-size:.82rem;font-weight:500}
+    .reader-ctrl{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;
+      background:var(--card);padding:10px 20px;border-radius:14px;
+      box-shadow:0 4px 20px var(--shadow);
+      position:sticky;top:64px;z-index:100;border:1px solid var(--border);width:100%;
+    }
+    .mode-group{
+      display:flex;gap:3px;background:var(--bg2);
+      border-radius:99px;padding:3px;border:1px solid var(--border);
+    }
+    .page-ind{font-weight:800;min-width:110px;text-align:center;font-size:.9rem}
+    .reader-img-wrap{position:relative;width:100%;max-width:800px}
+    .reader-img{
+      width:100%;border-radius:8px;
+      box-shadow:0 8px 40px var(--shadow);display:block;
+    }
+    .img-spin{
+      position:absolute;inset:0;display:flex;align-items:center;
+      justify-content:center;background:var(--bg2);border-radius:8px;min-height:320px;
+    }
+    .cascade-wrap{display:flex;flex-direction:column;align-items:center;gap:0;width:100%;max-width:800px}
+    .cascade-img{width:100%;display:block}
+    .cascade-sep{
+      color:var(--muted);font-size:.7rem;font-weight:600;padding:8px 0;
+      text-align:center;width:100%;letter-spacing:1px;text-transform:uppercase;
+    }
+
+    /* ══ BROWSE PAGE ══ */
+    .browse-search-bar{
+      display:flex;gap:10px;margin-bottom:28px;
+      padding:20px;background:var(--card);border-radius:16px;
+      border:1px solid var(--border);box-shadow:0 4px 20px var(--shadow-card);
+    }
+    .browse-search-input{
+      flex:1;padding:12px 20px;background:var(--inp-bg);color:var(--text);
+      border:1.5px solid var(--border);border-radius:99px;font-size:.95rem;
+      outline:none;font-family:'Poppins',sans-serif;
+      transition:border-color var(--speed),box-shadow var(--speed);
+    }
+    .browse-search-input::placeholder{color:var(--muted)}
+    .browse-search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,69,96,.15)}
+    .browse-count{color:var(--muted);font-size:.82rem;font-weight:500;margin-bottom:16px}
+
+    /* ══ SPINNER ══ */
+    .spin-wrap{text-align:center;padding:64px 20px;color:var(--muted)}
+    .spinner{
+      width:44px;height:44px;margin:0 auto 16px;
+      border:3px solid var(--border);border-top-color:var(--accent);
+      border-radius:50%;animation:spin .7s linear infinite;
+    }
+    .spin-wrap p{font-weight:500;font-size:.9rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .empty{text-align:center;padding:64px 20px;color:var(--muted)}
+    .empty-icon{font-size:3.5rem;margin-bottom:14px}
+    .empty p{font-weight:500}
+
+    /* ══ FILE BLOCK ══ */
+    .file-block{
+      display:flex;flex-direction:column;align-items:center;
+      justify-content:center;min-height:80vh;padding:32px;text-align:center;
+    }
+    .file-block h2{font-size:1.5rem;font-weight:800;margin-bottom:12px;color:var(--accent)}
+    .file-block p{color:var(--muted);max-width:480px;line-height:1.7;font-weight:500}
+    .steps{
+      background:var(--card);border:1.5px solid var(--border);border-radius:16px;
+      padding:22px 28px;margin-top:22px;text-align:left;max-width:480px;width:100%;
+    }
+    .steps h3{font-size:.93rem;font-weight:700;margin-bottom:12px}
+    .steps ol{padding-left:20px;color:var(--muted);font-size:.88rem;line-height:2.2}
+    .steps code{
+      background:var(--bg2);padding:2px 8px;border-radius:6px;
+      font-family:monospace;color:var(--text);font-size:.86rem;
+    }
+
+    @media(max-width:620px){
+      .header{padding:10px 14px;gap:9px}
+      .logo{font-size:1.25rem}
+      .btn{padding:8px 14px;font-size:.8rem}
+      .main{padding:0 12px 36px}
+      .hero{padding:24px 20px;margin:14px 0 28px}
+      .hero-icon{display:none}
+      .reader-ctrl{top:58px;padding:8px 12px;gap:7px}
+      .page-ind{min-width:80px;font-size:.82rem}
+      .browse-search-bar{padding:14px;gap:8px}
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { useState, useEffect, useRef, useCallback } = React;
+
+  const IS_FILE = location.protocol === 'file:';
+  const COVERS  = 'https://uploads.mangadex.org/covers';
+  const RATINGS = ['safe','suggestive'];
+
+  /* ══ API ══ */
+  // Em qualquer servidor HTTP (localhost ou Vercel) usa /api/ como proxy.
+  // Só falha se aberto via file://, que exibe FileBlockScreen antes de chamar.
+  async function apiFetch(path, params = {}) {
+    const p = new URLSearchParams();
+    for (const [k,v] of Object.entries(params)) {
+      if (Array.isArray(v)) v.forEach(i => p.append(k, i));
+      else p.append(k, String(v));
+    }
+    const url = `/api${path}?${p}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`Erro ${r.status} da API`);
+    return r.json();
+  }
+
+  const BASE = { 'includes[]':['cover_art'], 'contentRating[]':RATINGS };
+
+  function weekAgoISO() {
+    const d = new Date(); d.setDate(d.getDate()-7);
+    return d.toISOString().slice(0,19);
+  }
+
+  async function fetchSection(order, limit='6') {
+    const d = await apiFetch('/manga', {
+      ...BASE, ...order,
+      'availableTranslatedLanguage[]':['pt-br'], limit,
+    });
+    return d.data ?? [];
+  }
+
+  // Browse com paginação
+  async function fetchBrowse(category, offset=0, search='') {
+    const params = { ...BASE, limit:'24', offset:String(offset), 'contentRating[]':RATINGS };
+    if (search) {
+      params.title = search;
+    } else {
+      params['availableTranslatedLanguage[]'] = ['pt-br'];
+      if (category==='popular') params['order[followedCount]'] = 'desc';
+      else if (category==='recent')  params['order[latestUploadedChapter]'] = 'desc';
+      else if (category==='rated')   params['order[rating]'] = 'desc';
+    }
+    const d = await apiFetch('/manga', params);
+    return { items: d.data ?? [], total: d.total ?? 0 };
+  }
+
+  // Busca todos os capítulos em pt-br + pt com paginação
+  async function fetchAllChapters(mangaId) {
+    async function fetchLang(lang) {
+      let all = [], offset = 0;
+      while (true) {
+        const d = await apiFetch(`/manga/${mangaId}/feed`, {
+          'translatedLanguage[]':[lang],
+          'order[chapter]':'asc',
+          limit:'500', offset:String(offset),
+          'contentRating[]':RATINGS,
+        });
+        const batch = d.data ?? [];
+        all = [...all, ...batch];
+        if (batch.length < 500) break;
+        offset += batch.length;
+      }
+      return all;
+    }
+
+    const [ptbr, pt] = await Promise.all([fetchLang('pt-br'), fetchLang('pt')]);
+
+    // Mescla: pt-br tem prioridade sobre mesmo número de capítulo
+    const map = new Map();
+    for (const ch of [...pt, ...ptbr]) {
+      const key = ch.attributes.chapter ?? ch.id;
+      map.set(key, ch);
+    }
+
+    return Array.from(map.values()).sort((a,b) => {
+      const na = parseFloat(a.attributes.chapter) || 999999;
+      const nb = parseFloat(b.attributes.chapter) || 999999;
+      return na - nb;
+    });
+  }
+
+  async function fetchPages(chapterId) {
+    const d = await apiFetch(`/at-home/server/${chapterId}`, {});
+    return d.chapter.data.map(f => `${d.baseUrl}/data/${d.chapter.hash}/${f}`);
+  }
+
+  /* ══ HISTÓRICO ══ */
+  const HIST_KEY = 'mangabr_hist';
+  function getHistory() {
+    try { return JSON.parse(localStorage.getItem(HIST_KEY)||'[]'); } catch { return []; }
+  }
+  function pushHistory(manga) {
+    try {
+      const prev = getHistory().filter(m=>m.id!==manga.id);
+      prev.unshift(manga);
+      localStorage.setItem(HIST_KEY, JSON.stringify(prev.slice(0,6)));
+    } catch {}
+  }
+
+  /* ══ UTILS ══ */
+  function getCover(m) {
+    const r = m.relationships?.find(r=>r.type==='cover_art');
+    return r?.attributes?.fileName ? `${COVERS}/${m.id}/${r.attributes.fileName}.512.jpg` : null;
+  }
+  function getTitle(m) {
+    const t = m.attributes.title;
+    return t['pt-br']||t['pt']||t['en']||Object.values(t)[0]||'Sem título';
+  }
+  function getDesc(m) {
+    const d = m.attributes.description??{};
+    return d['pt-br']||d['pt']||d['en']||Object.values(d)[0]||'';
+  }
+  function hasPT(m) {
+    const l = m.attributes.availableTranslatedLanguages??[];
+    return l.includes('pt-br')||l.includes('pt');
+  }
+  function fmtDate(s) { return s?new Date(s).toLocaleDateString('pt-BR'):''; }
+  function chapLabel(ch) {
+    const n=ch.attributes.chapter, t=ch.attributes.title;
+    if(n&&t) return `Cap. ${n} – ${t}`;
+    return n?`Capítulo ${n}`:(t||'Capítulo');
+  }
+
+  /* ══ SECTION CONFIG ══ */
+  const SECTIONS = {
+    popular: { label:'🔥 Mais Lidos em Português',    color:'#ff4560', cat:'popular' },
+    recent:  { label:'📅 Atualizados Esta Semana',     color:'#2979ff', cat:'recent'  },
+    rated:   { label:'⭐ Mais Curtidos em Português',  color:'#ffd600', cat:'rated'   },
+    history: { label:'🕐 Vistos por Você',             color:'#e040fb', cat:'history' },
+  };
+
+  /* ══ SPINNER ══ */
+  function Spinner({text='Carregando...'}) {
+    return <div className="spin-wrap"><div className="spinner"/><p>{text}</p></div>;
+  }
+
+  /* ══ CARD ══ */
+  function MangaCard({manga, rank, isNew, isStar, isHist, onClick}) {
+    const cover=getCover(manga), title=getTitle(manga), pt=hasPT(manga);
+    return (
+      <div className="manga-card" onClick={onClick} title={title}>
+        <div className="card-badges">
+          {rank   && <span className="badge b-rank">#{rank}</span>}
+          {isNew  && <span className="badge b-new">NOVO</span>}
+          {isStar && <span className="badge b-star">★ TOP</span>}
+          {isHist && <span className="badge b-hist">VISTO</span>}
+          {pt     && <span className="badge b-pt">PT</span>}
+        </div>
+        {cover
+          ? <img src={cover} alt={title} className="manga-cover" loading="lazy"/>
+          : <div className="cover-ph">📖</div>}
+        <div className="card-body"><div className="card-title">{title}</div></div>
+      </div>
+    );
+  }
+
+  /* ══ FILE BLOCK ══ */
+  function FileBlockScreen() {
+    return (
+      <div className="file-block">
+        <div style={{fontSize:'4rem',marginBottom:16}}>🚫</div>
+        <h2>Servidor local necessário</h2>
+        <p>O navegador bloqueia chamadas à API ao abrir via <code style={{fontFamily:'monospace',background:'var(--bg2)',padding:'1px 6px',borderRadius:4}}>file://</code>.</p>
+        <div className="steps">
+          <h3>Como iniciar:</h3>
+          <ol>
+            <li>Clique duas vezes em <code>servidor.bat</code></li>
+            <li>Abra <code>http://localhost:8080</code> no navegador</li>
+          </ol>
+          <p style={{marginTop:12,fontSize:'.8rem',color:'var(--muted)',fontWeight:500}}>
+            Requer Node.js — baixe em <code>nodejs.org</code>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /* ══ HOME VIEW ══ */
+  function HomeView({onSelect, onBrowse}) {
+    const [data,    setData]    = useState({pop:[],week:[],rated:[]});
+    const [hist,    setHist]    = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error,   setError]   = useState('');
+
+    useEffect(() => {
+      setHist(getHistory());
+      Promise.all([
+        fetchSection({'order[followedCount]':'desc'}),
+        fetchSection({'order[latestUploadedChapter]':'desc', updatedAtSince:weekAgoISO()}),
+        fetchSection({'order[rating]':'desc'}),
+      ])
+        .then(([pop,week,rated]) => setData({pop,week,rated}))
+        .catch(e => setError(e.message))
+        .finally(() => setLoading(false));
+    }, []);
+
+    const handleSelect = m => { pushHistory(m); onSelect(m); };
+
+    const Section = ({secKey, items, badge}) => {
+      const cfg = SECTIONS[secKey];
+      if (!items.length) return null;
+      return (
+        <div className="home-section">
+          <div className="sec-header" style={{borderBottom:`2px solid ${cfg.color}22`}}>
+            <div className="sec-title">
+              <span className="sec-title-bar" style={{background:cfg.color}}/>
+              <span style={{color:cfg.color}}>{cfg.label}</span>
+            </div>
+            {cfg.cat !== 'history' && (
+              <button className="btn-more" style={{borderColor:cfg.color,color:cfg.color}}
+                onMouseEnter={e=>{e.currentTarget.style.background=cfg.color;e.currentTarget.style.color='#fff'}}
+                onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color=cfg.color}}
+                onClick={()=>onBrowse(cfg.cat)}>
+                Ver mais →
+              </button>
+            )}
+          </div>
+          <div className="home-grid">
+            {items.map((m,i) => (
+              <MangaCard key={m.id} manga={m}
+                rank={badge==='rank'?i+1:undefined}
+                isNew={badge==='new'} isStar={badge==='star'} isHist={badge==='hist'}
+                onClick={()=>handleSelect(m)}/>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    if (loading) return (
+      <>
+        <div className="hero">
+          <div className="hero-icon">📚</div>
+          <div className="hero-text">
+            <h1>Bem-vindo ao MangaBR</h1>
+            <p>Leia mangás em português de qualquer lugar.<br/>Pesquise acima ou explore os destaques.</p>
+          </div>
+        </div>
+        <Spinner text="Carregando destaques..."/>
+      </>
+    );
+
+    if (error) return (
+      <div className="empty">
+        <div className="empty-icon">⚠️</div>
+        <p style={{color:'var(--accent)'}}>{error}</p>
+      </div>
+    );
+
+    return (
+      <>
+        <div className="hero">
+          <div className="hero-icon">📚</div>
+          <div className="hero-text">
+            <h1>Bem-vindo ao MangaBR</h1>
+            <p>Leia mangás em português de qualquer lugar.<br/>Pesquise acima ou explore os destaques.</p>
+          </div>
+        </div>
+        <Section secKey="popular" items={data.pop}  badge="rank"/>
+        <Section secKey="recent"  items={data.week} badge="new"/>
+        <Section secKey="rated"   items={data.rated} badge="star"/>
+        {hist.length > 0 && <Section secKey="history" items={hist} badge="hist"/>}
+      </>
+    );
+  }
+
+  /* ══ BROWSE VIEW ══ */
+  function BrowseView({category, onSelect, onBack}) {
+    const cfg = SECTIONS[category] ?? SECTIONS.popular;
+    const [items,   setItems]   = useState([]);
+    const [total,   setTotal]   = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [more,    setMore]    = useState(false);
+    const [error,   setError]   = useState('');
+    const [search,  setSearch]  = useState('');
+    const [query,   setQuery]   = useState('');
+    const offsetRef = useRef(0);
+
+    const load = useCallback(async (q, reset) => {
+      if (reset) { setItems([]); offsetRef.current=0; setTotal(0); }
+      setLoading(true); setError('');
+      try {
+        const { items:batch, total:tot } = await fetchBrowse(category, offsetRef.current, q);
+        setItems(prev => reset ? batch : [...prev, ...batch]);
+        setTotal(tot);
+        offsetRef.current = (reset ? 0 : offsetRef.current) + batch.length;
+        setMore(offsetRef.current < tot);
+      } catch(e) { setError(e.message); }
+      finally { setLoading(false); }
+    }, [category]);
+
+    useEffect(() => { load(query, true); }, [query]);
+
+    const doSearch = () => {
+      const q = search.trim();
+      setQuery(q);
+    };
+
+    const handleSelect = m => { pushHistory(m); onSelect(m); };
+
+    return (
+      <div>
+        <button className="back-btn" onClick={onBack}>← Voltar</button>
+        <div className="sec-header" style={{marginBottom:20,borderBottom:`2px solid ${cfg.color}33`}}>
+          <div className="sec-title">
+            <span className="sec-title-bar" style={{background:cfg.color}}/>
+            <span style={{color:cfg.color}}>{cfg.label}</span>
+          </div>
+        </div>
+
+        {/* Barra de busca */}
+        <div className="browse-search-bar">
+          <input className="browse-search-input" type="text"
+            placeholder="Pesquisar nesta categoria ou qualquer mangá..."
+            value={search}
+            onChange={e=>setSearch(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&doSearch()}/>
+          <button className="btn btn-red" onClick={doSearch}>Buscar</button>
+          {query && (
+            <button className="btn-more" onClick={()=>{setSearch('');setQuery('');}}>
+              Limpar ✕
+            </button>
+          )}
+        </div>
+
+        {!loading && !error && (
+          <p className="browse-count">
+            {query
+              ? `${total} resultados para "${query}"`
+              : `${total} mangás disponíveis`}
+          </p>
+        )}
+
+        {!loading && error && <p style={{color:'var(--accent)',padding:12}}>{error}</p>}
+
+        <div className="flex-grid">
+          {items.map(m => <MangaCard key={m.id} manga={m} onClick={()=>handleSelect(m)}/>)}
+        </div>
+
+        {loading && <Spinner text="Carregando..."/>}
+
+        {!loading && more && (
+          <button className="btn-load" onClick={()=>load(query, false)}>
+            Carregar mais ({items.length} de {total})
+          </button>
+        )}
+
+        {!loading && !error && items.length===0 && (
+          <div className="empty">
+            <div className="empty-icon">🔍</div>
+            <p>Nenhum resultado encontrado.</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  /* ══ SEARCH VIEW ══ */
+  function SearchView({query, onSelect}) {
+    const [mangas, setMangas] = useState([]);
+    const [loading,setLoading]= useState(true);
+    const [error,  setError]  = useState('');
+
+    useEffect(()=>{
+      setLoading(true); setError(''); setMangas([]);
+      apiFetch('/manga', {
+        ...BASE, title:query, limit:'24',
+      })
+        .then(d => setMangas(d.data??[]))
+        .catch(e => setError(e.message))
+        .finally(()=>setLoading(false));
+    },[query]);
+
+    const handleSelect = m => { pushHistory(m); onSelect(m); };
+
+    if (loading) return <Spinner text="Buscando mangás..."/>;
+    if (error)   return <p style={{color:'var(--accent)',textAlign:'center',padding:24}}>{error}</p>;
+    if (!mangas.length) return (
+      <div className="empty">
+        <div className="empty-icon">🔍</div>
+        <p>Nenhum resultado para <strong>"{query}"</strong>.</p>
+        <p style={{marginTop:8,fontSize:'.83rem'}}>Tente em inglês ou japonês.</p>
+      </div>
+    );
+
+    const ptCount = mangas.filter(hasPT).length;
+    return (
+      <>
+        <div className="sec-header" style={{marginBottom:18,borderBottom:'2px solid var(--accent)33'}}>
+          <div className="sec-title">
+            <span className="sec-title-bar" style={{background:'var(--accent)'}}/>
+            <span>Resultados para "{query}"</span>
+          </div>
+          <span style={{color:'var(--muted)',fontSize:'.8rem',fontWeight:600}}>
+            {mangas.length} encontrados · {ptCount} com PT
+          </span>
+        </div>
+        <div className="flex-grid">
+          {mangas.map(m=><MangaCard key={m.id} manga={m} onClick={()=>handleSelect(m)}/>)}
+        </div>
+      </>
+    );
+  }
+
+  /* ══ CHAPTER VIEW ══ */
+  function ChapterView({manga, onBack, onSelect}) {
+    const [chapters,setChapters]=useState([]);
+    const [loading, setLoading] =useState(true);
+    const [error,   setError]   =useState('');
+    const [noPT,    setNoPT]    =useState(false);
+
+    useEffect(()=>{
+      setLoading(true); setError(''); setNoPT(false);
+      fetchAllChapters(manga.id)
+        .then(chs=>{ setChapters(chs); if(!chs.length) setNoPT(true); })
+        .catch(e=>setError(e.message))
+        .finally(()=>setLoading(false));
+    },[manga.id]);
+
+    const cover=getCover(manga), title=getTitle(manga), desc=getDesc(manga);
+
+    return (
+      <div>
+        <button className="back-btn" onClick={onBack}>← Voltar</button>
+        <div className="detail-header">
+          {cover
+            ? <img src={cover} alt={title} className="detail-cover"/>
+            : <div className="detail-cover-ph">📖</div>}
+          <div className="detail-info">
+            <h1>{title}</h1>
+            {manga.attributes.status &&
+              <span className="status-badge">{manga.attributes.status}</span>}
+            {desc && <p style={{marginTop:12}}>{desc}</p>}
+          </div>
+        </div>
+
+        {noPT && !loading && (
+          <div className="no-pt">
+            ⚠️ Nenhum capítulo em português encontrado no MangaDex.
+          </div>
+        )}
+
+        <div className="sec-header" style={{marginBottom:10,borderBottom:'2px solid var(--accent)33'}}>
+          <div className="sec-title">
+            <span className="sec-title-bar" style={{background:'var(--accent)'}}/>
+            <span>Capítulos em Português</span>
+          </div>
+          {!loading && !error &&
+            <span style={{color:'var(--muted)',fontSize:'.8rem',fontWeight:600}}>
+              {chapters.length} capítulos
+            </span>}
+        </div>
+
+        {loading && <Spinner text="Buscando todos os capítulos..."/>}
+        {error   && <p style={{color:'var(--accent)',padding:12}}>{error}</p>}
+
+        <div className="chapter-list">
+          {chapters.map(ch=>(
+            <div key={ch.id} className="chapter-row" onClick={()=>onSelect(ch)}>
+              <span className="ch-name">{chapLabel(ch)}</span>
+              <span className="ch-date">{fmtDate(ch.attributes.publishAt)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  /* ══ READER VIEW ══ */
+  function ReaderView({chapter, manga, onBack}) {
+    const [pages,   setPages]   = useState([]);
+    const [current, setCurrent] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [imgLoad, setImgLoad] = useState(false);
+    const [error,   setError]   = useState('');
+    const [mode,    setMode]    = useState('page');
+    const lenRef = useRef(0);
+
+    useEffect(()=>{
+      setLoading(true); setError(''); setCurrent(0);
+      fetchPages(chapter.id)
+        .then(p=>{ setPages(p); lenRef.current=p.length; })
+        .catch(e=>setError(e.message))
+        .finally(()=>setLoading(false));
+    },[chapter.id]);
+
+    useEffect(()=>{ if(mode==='page') setImgLoad(true); },[current,mode]);
+
+    useEffect(()=>{
+      const h=e=>{
+        if(mode!=='page') return;
+        if(['ArrowRight','ArrowDown'].includes(e.key))
+          setCurrent(c=>Math.min(c+1,lenRef.current-1));
+        if(['ArrowLeft','ArrowUp'].includes(e.key))
+          setCurrent(c=>Math.max(c-1,0));
+      };
+      window.addEventListener('keydown',h);
+      return ()=>window.removeEventListener('keydown',h);
+    },[mode]);
+
+    const go = i => { setCurrent(i); if(mode==='page') window.scrollTo({top:0,behavior:'smooth'}); };
+
+    const ModeToggle = () => (
+      <div className="mode-group">
+        <button className={`btn btn-mode${mode==='page'?' active':''}`}
+          onClick={()=>{ setMode('page'); window.scrollTo({top:0,behavior:'smooth'}); }}>
+          📄 Página
+        </button>
+        <button className={`btn btn-mode${mode==='cascade'?' active':''}`}
+          onClick={()=>{ setMode('cascade'); window.scrollTo({top:0,behavior:'smooth'}); }}>
+          📜 Cascata
+        </button>
+      </div>
+    );
+
+    const PageNav = () => (
+      <div className="reader-ctrl">
+        <button className="btn btn-red" onClick={()=>go(current-1)} disabled={current===0}>← Anterior</button>
+        <span className="page-ind">{pages.length?`${current+1} / ${pages.length}`:'—'}</span>
+        <button className="btn btn-red" onClick={()=>go(current+1)} disabled={current>=pages.length-1}>Próxima →</button>
+        <ModeToggle/>
+      </div>
+    );
+
+    return (
+      <div className="reader">
+        <div className="reader-topbar">
+          <button className="back-btn" style={{padding:0}} onClick={onBack}>← Capítulos</button>
+          <div style={{textAlign:'right'}}>
+            <div className="reader-title">{getTitle(manga)}</div>
+            <div className="reader-ch">{chapLabel(chapter)}</div>
+          </div>
+        </div>
+
+        {loading && <Spinner text="Carregando páginas..."/>}
+        {error   && <p style={{color:'var(--accent)',padding:16}}>{error}</p>}
+
+        {!loading && pages.length>0 && mode==='page' && (
+          <>
+            <PageNav/>
+            <div className="reader-img-wrap">
+              {imgLoad && <div className="img-spin"><div className="spinner" style={{margin:0}}/></div>}
+              <img key={pages[current]} src={pages[current]}
+                alt={`Página ${current+1}`} className="reader-img"
+                onLoad={()=>setImgLoad(false)} onError={()=>setImgLoad(false)}
+                style={{opacity:imgLoad?0:1,transition:'opacity .2s'}}/>
+            </div>
+            <PageNav/>
+            <p style={{color:'var(--muted)',fontSize:'.76rem',fontWeight:500}}>
+              Use ← → do teclado para navegar
+            </p>
+          </>
+        )}
+
+        {!loading && pages.length>0 && mode==='cascade' && (
+          <>
+            <div className="reader-ctrl">
+              <span style={{color:'var(--muted)',fontSize:'.83rem',fontWeight:500}}>
+                Role para baixo · {pages.length} páginas
+              </span>
+              <ModeToggle/>
+            </div>
+            <div className="cascade-wrap">
+              {pages.map((url,i)=>(
+                <React.Fragment key={url}>
+                  <img src={url} alt={`Página ${i+1}`} className="cascade-img" loading="lazy"/>
+                  {i<pages.length-1 &&
+                    <div className="cascade-sep">— {i+1} / {pages.length} —</div>}
+                </React.Fragment>
+              ))}
+            </div>
+            <div className="reader-ctrl" style={{marginTop:8}}>
+              <span style={{color:'var(--muted)',fontSize:'.83rem',fontWeight:500}}>Fim do capítulo</span>
+              <ModeToggle/>
+            </div>
+          </>
+        )}
+
+        {!loading && !error && !pages.length && (
+          <div className="empty"><div className="empty-icon">📭</div><p>Nenhuma página disponível.</p></div>
+        )}
+      </div>
+    );
+  }
+
+  /* ══ APP ══ */
+  function App() {
+    const [theme,    setTheme]    = useState('dark');
+    const [query,    setQuery]    = useState('');
+    const [searched, setSearched] = useState('');
+    const [browsing, setBrowsing] = useState(null);
+    const [selManga, setSelManga] = useState(null);
+    const [selChap,  setSelChap]  = useState(null);
+
+    const toggleTheme = ()=>setTheme(t=>t==='dark'?'light':'dark');
+
+    const doSearch = ()=>{
+      const q = query.trim(); if(!q) return;
+      setSelManga(null); setSelChap(null); setBrowsing(null); setSearched(q);
+    };
+
+    const goHome = ()=>{
+      setSelManga(null); setSelChap(null);
+      setSearched(''); setBrowsing(null); setQuery('');
+    };
+
+    let view='home';
+    if(IS_FILE)     view='file';
+    else if(selChap)    view='reader';
+    else if(selManga)   view='chapters';
+    else if(browsing)   view='browse';
+    else if(searched)   view='search';
+
+    return (
+      <div className={theme}>
+        <header className="header">
+          <div className="logo" onClick={goHome}>
+            Manga<span className="logo-dot">BR</span>
+          </div>
+          {!IS_FILE && (
+            <div className="search-wrap">
+              <input className="search-input" type="text"
+                placeholder="Pesquisar mangá... (Enter para buscar)"
+                value={query}
+                onChange={e=>setQuery(e.target.value)}
+                onKeyDown={e=>e.key==='Enter'&&doSearch()}/>
+              <button className="btn btn-red" onClick={doSearch}>Buscar</button>
+            </div>
+          )}
+          <button className="btn btn-ghost" onClick={toggleTheme} title="Alternar tema">
+            {theme==='dark'?'☀️':'🌙'}
+          </button>
+        </header>
+
+        <main className="main">
+          {view==='file'     && <FileBlockScreen/>}
+          {view==='home'     && <HomeView onSelect={setSelManga} onBrowse={setBrowsing}/>}
+          {view==='browse'   && (
+            <BrowseView category={browsing} onSelect={setSelManga}
+              onBack={()=>setBrowsing(null)}/>
+          )}
+          {view==='search'   && (
+            <SearchView key={searched} query={searched} onSelect={setSelManga}/>
+          )}
+          {view==='chapters' && (
+            <ChapterView manga={selManga}
+              onBack={()=>setSelManga(null)} onSelect={setSelChap}/>
+          )}
+          {view==='reader'   && (
+            <ReaderView chapter={selChap} manga={selManga}
+              onBack={()=>setSelChap(null)}/>
+          )}
+        </main>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
