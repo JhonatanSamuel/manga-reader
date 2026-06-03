@@ -11,6 +11,8 @@
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     :root{--speed:.22s;--radius:12px}
@@ -396,6 +398,72 @@
       .detail-cover,.detail-cover-ph{width:100px}
       .hero-text h1{font-size:1.15rem}
     }
+
+    /* ══ AUTH MODAL ══ */
+    .auth-overlay{
+      position:fixed;inset:0;z-index:500;
+      background:rgba(0,0,0,.72);
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;backdrop-filter:blur(6px);
+    }
+    .auth-card{
+      background:var(--card);border-radius:20px;padding:36px;
+      width:100%;max-width:420px;position:relative;
+      border:1.5px solid var(--border);
+      box-shadow:0 24px 64px rgba(0,0,0,.6);
+      animation:authIn .2s ease;
+    }
+    @keyframes authIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+    .auth-close{
+      position:absolute;top:14px;right:18px;
+      background:none;border:none;color:var(--muted);
+      font-size:1.2rem;cursor:pointer;padding:4px;
+      transition:color .2s;
+    }
+    .auth-close:hover{color:var(--text)}
+    .auth-title{font-size:1.45rem;font-weight:900;margin-bottom:6px}
+    .auth-sub{color:var(--muted);font-size:.87rem;margin-bottom:28px;font-weight:500}
+    .auth-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+    .auth-label{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.3px}
+    .auth-input{
+      padding:12px 16px;background:var(--inp-bg);color:var(--text);
+      border:1.5px solid var(--border);border-radius:10px;
+      font-size:.95rem;font-family:'Poppins',sans-serif;outline:none;
+      transition:border-color .22s,box-shadow .22s;
+    }
+    .auth-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,69,96,.15)}
+    .auth-input::placeholder{color:var(--muted)}
+    .auth-error{
+      color:#ff6b6b;font-size:.82rem;font-weight:500;
+      margin-bottom:14px;padding:10px 14px;
+      background:rgba(255,69,96,.1);border-radius:8px;
+      border-left:3px solid var(--accent);
+    }
+    .auth-toggle{
+      text-align:center;margin-top:16px;
+      font-size:.84rem;color:var(--muted);font-weight:500;
+    }
+    .auth-toggle button{
+      background:none;border:none;color:var(--accent);font-weight:700;
+      cursor:pointer;font-family:'Poppins',sans-serif;font-size:.84rem;
+      text-decoration:underline;text-underline-offset:2px;
+    }
+    .user-chip{
+      display:flex;align-items:center;gap:8px;
+      background:var(--bg2);border:1.5px solid var(--border);
+      border-radius:99px;padding:5px 14px 5px 10px;
+      font-size:.78rem;font-weight:600;color:var(--muted);
+      max-width:180px;
+    }
+    .user-avatar{
+      width:26px;height:26px;border-radius:50%;
+      background:linear-gradient(135deg,#ff4560,#ff8c42);
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:.7rem;font-weight:800;flex-shrink:0;
+    }
+    .user-email{
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;
+    }
   </style>
 </head>
 <body>
@@ -406,6 +474,97 @@
   const IS_FILE = location.protocol === 'file:';
   const COVERS  = '/api/covers';
   const RATINGS = ['safe','suggestive'];
+
+  /* ══ FIREBASE AUTH ══
+     1. Acesse console.firebase.google.com
+     2. Crie um projeto → "Adicionar app" → Web
+     3. Ative Authentication > E-mail/senha
+     4. Copie a config e substitua os valores abaixo
+  ══════════════════════ */
+  const FIREBASE_CONFIG = {
+    apiKey:            "COLE_AQUI",
+    authDomain:        "COLE_AQUI",
+    projectId:         "COLE_AQUI",
+    storageBucket:     "COLE_AQUI",
+    messagingSenderId: "COLE_AQUI",
+    appId:             "COLE_AQUI",
+  };
+
+  let firebaseAuth = null;
+  try {
+    if (FIREBASE_CONFIG.apiKey !== 'COLE_AQUI') {
+      firebase.initializeApp(FIREBASE_CONFIG);
+      firebaseAuth = firebase.auth();
+    }
+  } catch(e) { console.warn('Firebase:', e); }
+
+  function authError(code) {
+    const m = {
+      'auth/user-not-found':     'E-mail não encontrado.',
+      'auth/wrong-password':     'Senha incorreta.',
+      'auth/invalid-credential': 'E-mail ou senha incorretos.',
+      'auth/email-already-in-use':'Este e-mail já está cadastrado.',
+      'auth/weak-password':      'A senha deve ter pelo menos 6 caracteres.',
+      'auth/invalid-email':      'E-mail inválido.',
+      'auth/too-many-requests':  'Muitas tentativas. Aguarde um momento.',
+    };
+    return m[code] || 'Erro ao autenticar. Tente novamente.';
+  }
+
+  /* ══ LOGIN MODAL ══ */
+  function LoginModal({ onClose }) {
+    const [isReg,  setIsReg]  = useState(false);
+    const [email,  setEmail]  = useState('');
+    const [pass,   setPass]   = useState('');
+    const [err,    setErr]    = useState('');
+    const [busy,   setBusy]   = useState(false);
+
+    const submit = async e => {
+      e.preventDefault();
+      setBusy(true); setErr('');
+      try {
+        if (isReg) await firebaseAuth.createUserWithEmailAndPassword(email, pass);
+        else       await firebaseAuth.signInWithEmailAndPassword(email, pass);
+        onClose();
+      } catch(ex) { setErr(authError(ex.code)); }
+      finally { setBusy(false); }
+    };
+
+    return (
+      <div className="auth-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+        <div className="auth-card">
+          <button className="auth-close" onClick={onClose}>✕</button>
+          <div className="auth-title">{isReg?'Criar conta':'Entrar'}</div>
+          <p className="auth-sub">
+            {isReg?'Crie sua conta gratuita MangaBR':'Acesse sua conta para continuar'}
+          </p>
+          <form onSubmit={submit}>
+            <div className="auth-field">
+              <label className="auth-label">E-MAIL</label>
+              <input className="auth-input" type="email" placeholder="seu@email.com"
+                value={email} onChange={e=>setEmail(e.target.value)} required autoFocus/>
+            </div>
+            <div className="auth-field">
+              <label className="auth-label">SENHA</label>
+              <input className="auth-input" type="password" placeholder="••••••••"
+                value={pass} onChange={e=>setPass(e.target.value)} required minLength={6}/>
+            </div>
+            {err && <div className="auth-error">{err}</div>}
+            <button className="btn btn-red" type="submit" disabled={busy}
+              style={{width:'100%',padding:'13px',fontSize:'.95rem',marginTop:4}}>
+              {busy?'Aguarde...':(isReg?'Criar conta':'Entrar')}
+            </button>
+          </form>
+          <div className="auth-toggle">
+            {isReg?'Já tem conta? ':'Não tem conta? '}
+            <button onClick={()=>{setIsReg(r=>!r);setErr('');}}>
+              {isReg?'Entrar':'Criar conta'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   /* ══ API ══ */
   // Em qualquer servidor HTTP (localhost ou Vercel) usa /api/ como proxy.
@@ -1028,12 +1187,19 @@
 
   /* ══ APP ══ */
   function App() {
-    const [theme,    setTheme]    = useState('dark');
-    const [query,    setQuery]    = useState('');
-    const [searched, setSearched] = useState('');
-    const [browsing, setBrowsing] = useState(null);
-    const [selManga, setSelManga] = useState(null);
-    const [selChap,  setSelChap]  = useState(null);
+    const [theme,      setTheme]      = useState('dark');
+    const [query,      setQuery]      = useState('');
+    const [searched,   setSearched]   = useState('');
+    const [browsing,   setBrowsing]   = useState(null);
+    const [selManga,   setSelManga]   = useState(null);
+    const [selChap,    setSelChap]    = useState(null);
+    const [user,       setUser]       = useState(undefined); // undefined = carregando
+    const [showLogin,  setShowLogin]  = useState(false);
+
+    useEffect(()=>{
+      if (!firebaseAuth) { setUser(null); return; }
+      return firebaseAuth.onAuthStateChanged(u => setUser(u ?? null));
+    }, []);
 
     const toggleTheme = ()=>setTheme(t=>t==='dark'?'light':'dark');
 
@@ -1048,11 +1214,13 @@
     };
 
     let view='home';
-    if(IS_FILE)     view='file';
+    if(IS_FILE)         view='file';
     else if(selChap)    view='reader';
     else if(selManga)   view='chapters';
     else if(browsing)   view='browse';
     else if(searched)   view='search';
+
+    const avatarLetter = user?.email?.[0]?.toUpperCase() ?? '?';
 
     return (
       <div className={theme}>
@@ -1070,10 +1238,33 @@
               <button className="btn btn-red" onClick={doSearch}>Buscar</button>
             </div>
           )}
-          <button className="btn btn-ghost" onClick={toggleTheme} title="Alternar tema">
-            {theme==='dark'?'☀️':'🌙'}
-          </button>
+          <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
+            <button className="btn btn-ghost" onClick={toggleTheme} title="Alternar tema">
+              {theme==='dark'?'☀️':'🌙'}
+            </button>
+            {firebaseAuth && user===null && (
+              <button className="btn btn-red" onClick={()=>setShowLogin(true)}
+                style={{whiteSpace:'nowrap'}}>
+                Entrar
+              </button>
+            )}
+            {firebaseAuth && user && (
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <div className="user-chip" title={user.email}>
+                  <div className="user-avatar">{avatarLetter}</div>
+                  <span className="user-email">{user.email}</span>
+                </div>
+                <button className="btn btn-ghost"
+                  style={{padding:'7px 12px',fontSize:'.78rem'}}
+                  onClick={()=>firebaseAuth.signOut()}>
+                  Sair
+                </button>
+              </div>
+            )}
+          </div>
         </header>
+
+        {showLogin && <LoginModal onClose={()=>setShowLogin(false)}/>}
 
         <main className="main">
           {view==='file'     && <FileBlockScreen/>}
